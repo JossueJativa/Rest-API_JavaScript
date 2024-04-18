@@ -3,13 +3,13 @@ const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 
-const usuariosGet = (req = request, res = response) => {
-    const { query, name = 'no name', apikey } = req.query;
+const usuariosGet = async(req = request, res = response) => {
+    // const { query, name = 'no name', apikey } = req.query;
+    const { limit = 5 } = req.query;
+    const users = await User.find()
+        .limit(Number(limit));
     res.json({
-        message: 'get api - controller',
-        query: query,
-        name: name,
-        apikey: apikey
+        users
     });
 }
 
@@ -39,18 +39,25 @@ const usuariosPost = async(req, res = response) => {
     } catch (error) { console.log(error); }
 
     res.status(201).json({
-        message: 'post api - controller',
         name,
         email,
         id: user._id
     });
 }
 
-const usuariosPut = (req, res = response) => {
+const usuariosPut = async(req, res = response) => {
     const {id} = req.params;
+    const {_id, password, from_google, email, ...rest} = req.body;
+
+    // validate against database
+    if (password) {
+        const salt = bcryptjs.genSaltSync();
+        rest.password = bcryptjs.hashSync(password, salt);
+    }
+
+    const userdb = await User.findByIdAndUpdate(id, rest);
     res.json({
-        message: 'put api - controller',
-        id: id
+        user: userdb
     });
 }
 
