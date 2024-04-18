@@ -5,10 +5,16 @@ const { validationResult } = require('express-validator');
 
 const usuariosGet = async(req = request, res = response) => {
     // const { query, name = 'no name', apikey } = req.query;
-    const { limit = 5 } = req.query;
-    const users = await User.find()
-        .limit(Number(limit));
+    const { limit = 5, desde = 0 } = req.query;
+
+    const [ total, users ] = await Promise.all([
+        User.countDocuments({ status: true }), 
+        User.find({ status: true })
+        .skip(Number(desde))
+        .limit(Number(limit))
+    ]);
     res.json({
+        total,
         users
     });
 }
@@ -63,9 +69,15 @@ const usuariosPut = async(req, res = response) => {
 
 const usuariosDelete = (req, res = response) => {
     const {id} = req.params;
+    // Borrar fisicamente
+    // const user = User.findByIdAndDelete(id); No hacer de esta manera
+
+    // Borrado lógico
+    const user = User.findByIdAndUpdate(id, {status: false});
+
+
     res.json({
-        message: 'delete api - controller',
-        id: id
+        user
     });
 }
 
