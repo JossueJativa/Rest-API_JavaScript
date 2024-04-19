@@ -6,6 +6,7 @@ class Server {
     constructor() {
         // routes path
         this.user_path = '/api/users';
+        this.auth_path = 'api/auth';
 
         //Express instance
         this.app = express();
@@ -37,6 +38,7 @@ class Server {
 
     routes() {
         this.app.use(this.user_path, require('../routes/user.routes'));
+        this.app.use(this.auth_path, require('../routes/auth.routes'));
     }
 
     listen() {
