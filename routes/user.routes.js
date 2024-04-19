@@ -3,9 +3,7 @@ const { usuariosGet, usuariosPost, usuariosPut, usuariosPatch, usuariosDelete } 
 const { check } = require('express-validator');
 const { isRoleValid, isEmailExist, isUserIdExist } = require('../helpers/db_validators');
 
-const { validateCampus } = require('../middlewares/checkcampus');
-const validateJWT = require('../middlewares/validate-jwt');
-const { isAdminRole } = require('../middlewares/isRolAdmin');
+const { validateCampus, isAdminRole, validateJWT } = require('../middlewares');
 
 const router = Router();
 
