@@ -4,36 +4,34 @@ const { dbConnection } = require('../database/config.db');
 
 class Server {
     constructor() {
-        // routes path
         this.user_path = '/api/users';
-        this.auth_path = 'api/auth';
+        this.auth_path = '/api/auth';
 
-        //Express instance
         this.app = express();
 
-        //Port
-        this.port = process.env.PORT;
+        this.port = process.env.PORT || 3000;
 
-        //Connect to database
         this.connectDB();
 
-        //Middlewares
         this.middlewares();
 
-        //Routes
         this.routes();
     }
 
     async connectDB() {
-        await dbConnection();
+        try {
+            await dbConnection();
+            console.log('Database connected successfully');
+        } catch (error) {
+            console.error('Database connection failed:', error);
+        }
     }
 
     middlewares() {
-        //CORS
+        // CORS
         this.app.use(cors());
-        //Read and parse body
+        // Read and parse body
         this.app.use(express.json());
-        this.app.use(express.static('public'));
     }
 
     routes() {

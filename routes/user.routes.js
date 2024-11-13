@@ -3,7 +3,7 @@ const { usuariosGet, usuariosPost, usuariosPut, usuariosPatch, usuariosDelete } 
 const { check } = require('express-validator');
 const { isRoleValid, isEmailExist, isUserIdExist } = require('../helpers/db_validators');
 
-const { validateCampus, isAdminRole, validateJWT } = require('../middlewares');
+const { validateCampus, isAdminRole } = require('../middlewares');
 
 const router = Router();
 
@@ -11,16 +11,15 @@ router.get('/', usuariosGet);
 
 router.post('/', [
     check('name', 'Name is required').not().isEmpty(),
-    check('email', 'Email need a validate email').isEmail(),
+    check('email', 'Email needs to be a valid email').isEmail(),
     check('email').custom( isEmailExist ),
     check('password', 'Password must be at least 6 characters').isLength({ min: 6 }),
-    // check('role', 'Role is required').not().isEmpty(),
     check('role').custom( isRoleValid ),
     validateCampus
 ], usuariosPost );
 
 router.put('/:id', [
-    check('id', 'Not a valid ID').isMongoId(),
+    check('id', 'Not a valid ID').isUUID(),  // Use isUUID for UUID validation
     check('id').custom( isUserIdExist ),
     check('role').custom( isRoleValid ),
     validateCampus
@@ -29,10 +28,9 @@ router.put('/:id', [
 router.patch('/', usuariosPatch);
 
 router.delete('/:id', [
-    validateJWT,
     isAdminRole,
-    check('id', 'Not a valid ID').isMongoId(),
-    check('id').custom( isUserIdExist ),
+    check('id', 'Not a valid ID').isUUID(),
+    check('id').custom(isUserIdExist),
     validateCampus
 ], usuariosDelete);
 

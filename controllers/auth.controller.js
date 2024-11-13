@@ -1,44 +1,44 @@
 const { response } = require("express");
 const bcrypt = require('bcryptjs');
-
-const User = require('../models/user');
+const { User } = require('../models/user');
 const { generateJWT } = require("../helpers/generateJWT");
 
 const login = async (req, res = response) => {
-    const{ email, password } = req.body;
+    const { email, password } = req.body;
 
-    try{
-        //check email
-        const user = await User.findOne({ email });
+    try {
+        // Check email
+        const user = await User.findOne({ where: { email } });
 
-        if(!user){
+        if (!user) {
             return res.status(400).json({
                 msg: 'User/Password are not correct - email'
             });
         }
-        //check if user is active
-        if(!user.state){
+
+        // Check if user is active
+        if (!user.status) {
             return res.status(400).json({
-                msg: 'User/Password are not correct - state: false'
+                msg: 'User/Password are not correct - status: false'
             });
         }
 
-        //check password
+        // Check password
         const validPassword = bcrypt.compareSync(password, user.password);
-        if(!validPassword){
+        if (!validPassword) {
             return res.status(400).json({
                 msg: 'User/Password are not correct - password'
             });
         }
 
-        //generate JWT
+        // Generate JWT
         const token = await generateJWT(user.id);
 
         res.json({
             user,
             token
         });
-    }catch(error){
+    } catch (error) {
         console.log(error);
         res.status(500).json({
             msg: 'Error',

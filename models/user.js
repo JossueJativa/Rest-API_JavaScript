@@ -1,36 +1,84 @@
-const { Schema, model } = require('mongoose')
+const { Sequelize, DataTypes } = require('sequelize');
+const path = require('path');
 
-const UserSchema = Schema({
+const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: path.resolve(__dirname, '../database.sqlite') // Asegúrate de que esta ruta es correcta
+});
+
+// Definición de los modelos
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
     name: {
-        type: String,
-        required: [true, 'Name is required']
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: { msg: 'Name is required' }
+        }
     },
     email: {
-        type: String,
-        required: [true, 'Email is required'],
-        unique: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: { msg: 'Invalid email format' },
+            notEmpty: { msg: 'Email is required' }
+        }
     },
     password: {
-        type: String,
-        required: [true, 'The password is required']
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: { msg: 'The password is required' }
+        }
     },
     img: {
-        type: String
+        type: DataTypes.STRING,
+        allowNull: true
     },
     role: {
-        type: String,
-        required: true,
-        enum: ['ADMIN_ROLE', 'USER_ROLE'],
-        default: 'USER_ROLE'
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'USER_ROLE',
+        validate: {
+            isIn: {
+                args: [['ADMIN_ROLE', 'USER_ROLE']],
+                msg: 'Role must be either ADMIN_ROLE or USER_ROLE'
+            }
+        }
     },
     status: {
-        type: Boolean,
-        default: true
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     },
     from_google: {
-        type: Boolean,
-        default: false
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 
-module.exports = model('User', UserSchema);
+const Role = sequelize.define('Role', {
+    role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            notEmpty: { msg: 'Role is required' }
+        }
+    }
+});
+
+User.belongsTo(Role, { foreignKey: 'role', targetKey: 'role' });
+Role.hasMany(User, { foreignKey: 'role', sourceKey: 'role' });
+
+sequelize.sync({ force: false }).then(() => {
+    console.log('Tablas sincronizadas');
+}).catch((error) => {
+    console.error('Error sincronizando las tablas:', error);
+});
+
+module.exports = { User, Role, sequelize };
