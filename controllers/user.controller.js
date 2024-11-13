@@ -1,6 +1,7 @@
 const { response, request } = require('express');
 const bcryptjs = require('bcryptjs');
 const { User } = require('../models/user');
+const { Role } = require('../models/role');
 const { validationResult } = require('express-validator');
 
 const usuariosGet = async (req = request, res = response) => {
@@ -41,19 +42,40 @@ const usuariosPost = async (req, res = response) => {
         });
     }
 
+    // Check if role exists in the Role table
+    const roleExists = await Role.findOne({ where: { role } });
+    if (!roleExists) {
+        return res.status(400).json({
+            message: `Role ${role} does not exist`
+        });
+    }
+
     // Encrypt password
     const salt = bcryptjs.genSaltSync();
     const hashedPassword = bcryptjs.hashSync(password, salt);
 
     try {
-        const user = await User.create({ name, email, password: hashedPassword, role });
+        // Create the user, linking it with the roleId
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            roleId: roleExists.id  // Asignar el roleId del rol encontrado
+        });
+        
+        // Return the newly created user
         res.status(201).json({
             name: user.name,
             email: user.email,
-            id: user.id
+            id: user.id,
+            role: roleExists.role
         });
     } catch (error) {
-        res.status(500).json({ error: 'Error creating user' });
+        console.error('Error creating user:', error);
+        res.status(500).json({
+            error: 'Error creating user',
+            message: error.message
+        });
     }
 };
 

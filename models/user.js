@@ -1,12 +1,12 @@
 const { Sequelize, DataTypes } = require('sequelize');
+const { Role } = require('./role');
 const path = require('path');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.resolve(__dirname, '../database/database.sqlite') // Asegúrate de que esta ruta es correcta
+    storage: path.resolve(__dirname, '../database/database.sqlite')
 });
 
-// Definición de los modelos
 const User = sequelize.define('User', {
     id: {
         type: DataTypes.UUID,
@@ -36,44 +36,22 @@ const User = sequelize.define('User', {
             notEmpty: { msg: 'The password is required' }
         }
     },
-    img: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    role: {
-        type: DataTypes.STRING,
+    roleId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 'USER_ROLE',
-        validate: {
-            isIn: {
-                args: [['ADMIN_ROLE', 'USER_ROLE']],
-                msg: 'Role must be either ADMIN_ROLE or USER_ROLE'
-            }
+        references: {
+            model: Role,
+            key: 'id'
         }
     },
     status: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
-    },
-    from_google: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
     }
 });
 
-const Role = sequelize.define('Role', {
-    role: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-            notEmpty: { msg: 'Role is required' }
-        }
-    }
-});
-
-User.belongsTo(Role, { foreignKey: 'role', targetKey: 'role' });
-Role.hasMany(User, { foreignKey: 'role', sourceKey: 'role' });
+User.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id' });
+Role.hasMany(User, { foreignKey: 'roleId', sourceKey: 'id' });
 
 sequelize.sync({ force: false }).then(() => {
     console.log('Tablas sincronizadas');
