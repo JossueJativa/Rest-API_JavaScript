@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { dbConnection } = require('../database/config.db');
+// const { dbConnection } = require('../database/config.db');
 
 class Server {
     constructor() {
@@ -11,7 +11,7 @@ class Server {
 
         this.port = process.env.PORT || 3000;
 
-        this.connectDB();
+        // this.connectDB();
 
         this.middlewares();
 
@@ -19,12 +19,6 @@ class Server {
     }
 
     async connectDB() {
-        try {
-            await dbConnection();
-            console.log('Database connected successfully');
-        } catch (error) {
-            console.error('Database connection failed:', error);
-        }
     }
 
     middlewares() {

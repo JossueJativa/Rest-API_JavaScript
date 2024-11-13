@@ -3,7 +3,7 @@ const path = require('path');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.resolve(__dirname, '../database.sqlite') // Asegúrate de que esta ruta es correcta
+    storage: path.resolve(__dirname, '../database/database.sqlite') // Asegúrate de que esta ruta es correcta
 });
 
 // Definición de los modelos
